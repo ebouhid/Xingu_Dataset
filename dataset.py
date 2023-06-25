@@ -13,10 +13,12 @@ class XinguDataset(Dataset):
                  composition,
                  regions,
                  patch_size,
+                 stride_size,
                  transforms=None):
         self.encoder = encoder
         self.composition = composition
         self.patch_size = patch_size
+        self.stride_size = stride_size
 
         self.img_path = scenes_dir
         self.msk_path = masks_dir
@@ -52,10 +54,10 @@ class XinguDataset(Dataset):
 
         for image in self.images:
             height, width, _ = image.shape
-            for i in range(0, height, self.patch_size):
+            for i in range(0, height, self.stride_size):
                 if (i + self.patch_size) > height:
                     continue
-                for j in range(0, width, self.patch_size):
+                for j in range(0, width, self.stride_size):
                     if (j + self.patch_size) > width:
                         continue
                     patch_image = image[i:i + self.patch_size,
@@ -78,10 +80,10 @@ class XinguDataset(Dataset):
 
         for mask in self.masks:
             height, width, _ = mask.shape
-            for i in range(0, height, self.patch_size):
+            for i in range(0, height, self.stride_size):
                 if i + self.patch_size > height:
                     continue
-                for j in range(0, width, self.patch_size):
+                for j in range(0, width, self.stride_size):
                     if j + self.patch_size > width:
                         continue
                     patch_mask = mask[i:i + self.patch_size,
