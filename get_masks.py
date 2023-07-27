@@ -22,6 +22,11 @@ if __name__ == '__main__':
             bands.append(band)
 
         prodes_data = np.dstack(bands)
+
+        # Adaptation to consider only "forest" and "non-forest" classes
+        prodes_data = np.where(prodes_data == 2, 0, 1)
+        prodes_data = prodes_data.astype(np.uint8)
+
         np.save(f'truth_masks/truth_{scope}.npy', prodes_data)
 
     print('All done!')

@@ -13,7 +13,7 @@ class OneHotEncoding():
         shape = (self.num_classes, ) + mask.shape[:2]
         encoded = np.zeros(shape)
         for i in range(0, self.num_classes):
-            encoded[i, :, :] = np.all(mask.reshape(-1, 1) == i + 1,
+            encoded[i, :, :] = np.all(mask.reshape(-1, 1) == i,
                                         axis=1).reshape(shape[1:])
 
         return encoded
