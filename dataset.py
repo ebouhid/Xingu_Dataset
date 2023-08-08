@@ -9,13 +9,11 @@ class XinguDataset(Dataset):
     def __init__(self,
                  scenes_dir,
                  masks_dir,
-                 encoder,
                  composition,
                  regions,
                  patch_size,
                  stride_size,
                  transforms=None):
-        self.encoder = encoder
         self.composition = composition
         self.patch_size = patch_size
         self.stride_size = stride_size
@@ -24,8 +22,8 @@ class XinguDataset(Dataset):
         self.msk_path = masks_dir
 
         self.image_paths = sorted(os.listdir(self.img_path))
-        print(f'total paths: {len(self.image_paths)}')
-        print(f'paths: {self.image_paths}')
+        # print(f'total paths: {len(self.image_paths)}')
+        # print(f'paths: {self.image_paths}')
         self.mask_paths = sorted(os.listdir(self.msk_path))
 
         self.images = []
@@ -46,7 +44,7 @@ class XinguDataset(Dataset):
             id = int((msk_scene.split('_')[-1].split('.')[0])[1:])
             if id in regions:
                 self.masks.append(
-                    np.load(os.path.join(self.msk_path, msk_scene)))
+                    np.load(os.path.join(self.msk_path, msk_scene)).squeeze())
 
         # patchify
         self.img_patches = []
@@ -79,7 +77,7 @@ class XinguDataset(Dataset):
                         self.img_patches.append(patch_image.transpose(2, 0, 1))
 
         for mask in self.masks:
-            height, width, _ = mask.shape
+            height, width = mask.shape
             for i in range(0, height, self.stride_size):
                 if i + self.patch_size > height:
                     continue
@@ -87,7 +85,7 @@ class XinguDataset(Dataset):
                     if j + self.patch_size > width:
                         continue
                     patch_mask = mask[i:i + self.patch_size,
-                                      j:j + self.patch_size, :]
+                                      j:j + self.patch_size]
                     # mask augmentation goes here
                     height_p, width_p = patch_image.shape[:2]
                     angle = 0
@@ -124,6 +122,10 @@ class XinguDataset(Dataset):
 
         combination = np.float32(combination) / 255
 
-        encoded_mask = self.encoder.perform(mask)
+        mask = np.expand_dims(mask, axis=0)
+        mask = np.float32(mask)
 
-        return combination, encoded_mask
+        combination = combination.astype(np.float32)
+        combination = combination - combination.min() / (combination.max() -
+                                                         combination.min())
+        return combination, mask
